@@ -1,0 +1,89 @@
+class DLock impelemnt { 
+    ///more like aplication in the prev PJs.
+    Node node;
+    queuq;
+    current_request_timestamp;
+    constructor( NodeID identifier, String configFileName) {
+        
+    }
+
+    synchronize lock(time_stamp)
+    {
+        current_request_timestamp = time_stamp; 
+        node.sendall(request)
+        waitForAllNeighborReply();
+    }
+
+    synchronize unlock()
+    {
+        current_request_timestamp = -1;
+        foreach ( message in queue) {
+            node.send(reply, message.source);
+        }
+    }
+
+    synchronize recieve()
+    {
+        if (message.type == request){
+            if(current_request_timestamp == -1 || message.time < current_request_timestamp)
+                {
+                    node.send(reply);
+            }else
+            {
+               enqueue(message);
+            }
+        }else // type == reply
+        {
+            recieve_neighbor[message.id] = true;
+            notify;
+        }
+    }
+
+    waitForAllNeighborReply()
+    {
+        foreach(recieve_neighbor)
+        {   
+            recieve_neighbor = false;
+        }
+
+        while (recieve_neighbor[i]) {
+            wait;
+        }
+    }
+
+
+
+}
+
+class Application {
+    int request_delay, 
+    int execution_time,
+    int critical_section_num
+    Dlock lock.
+    constructor(int id, string configFileName) {
+        
+    }
+
+    run()
+    {
+        for (i in (1 - critical_section_num)) {
+            sleep(getRandom(request_delay))
+            Dlock.lock(i)
+            execute_CS()
+            Dlock.unlock()
+        }
+        
+    }
+
+    execute_CS()
+    {
+        sleep( getRandom(execution_time))
+    }
+
+    getRandom(int time)
+    {
+        x =  math.ln(random.random()) / -0.9
+        return x*time*1000; // sec to millisec
+    }
+
+}
