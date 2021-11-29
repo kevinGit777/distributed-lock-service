@@ -3,28 +3,32 @@ class DLock impelemnt {
     Node node;
     queuq;
     current_request_timestamp;
+    lock;
     constructor( NodeID identifier, String configFileName) {
         
     }
 
-    synchronize lock(time_stamp)
+    lock(time_stamp)
     {
         current_request_timestamp = time_stamp; 
         node.sendall(request)
         waitForAllNeighborReply();
     }
 
-    synchronize unlock()
+    unlock()
     {
+        lock.lock()
         current_request_timestamp = -1;
         foreach ( message in queue) {
             node.send(reply, message.source);
         }
+        lock.unlock()
     }
 
-    synchronize recieve()
+    sychronized recieve()
     {
         if (message.type == request){
+            lock.lock()
             if(current_request_timestamp == -1 || message.time < current_request_timestamp)
                 {
                     node.send(reply);
@@ -32,6 +36,7 @@ class DLock impelemnt {
             {
                enqueue(message);
             }
+            lock.unlock()
         }else // type == reply
         {
             recieve_neighbor[message.id] = true;
@@ -39,7 +44,7 @@ class DLock impelemnt {
         }
     }
 
-    waitForAllNeighborReply()
+    sychronized waitForAllNeighborReply()
     {
         foreach(recieve_neighbor)
         {   
