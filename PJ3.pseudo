@@ -1,3 +1,4 @@
+#########part 1 begin##############
 class DLock impelemnt { 
     ///more like aplication in the prev PJs.
     Node node;
@@ -24,6 +25,10 @@ class DLock impelemnt {
         }
         lock.unlock()
     }
+
+    #########part 1 end##############
+    
+    #########part 2 begin##############
 
     sychronized recieve()
     {
@@ -56,10 +61,11 @@ class DLock impelemnt {
         }
     }
 
-
+    #########part 2 end##############
 
 }
 
+#########part 3 begin##############
 class Application {
     int request_delay, 
     int execution_time,
@@ -92,3 +98,5 @@ class Application {
     }
 
 }
+
+#########part 3 end##############
