@@ -6,11 +6,15 @@ public class Message implements java.io.Serializable
 	
 	//Payload of the message
 	byte[] data;
+
+	int timestamp;
 	
 	//Constructor
-	public Message(NodeID source, byte[] data)
+	public Message(NodeID source, byte[] data, int timestamp)
 	{
 		this.source = source;
 		this.data = data;
+		this.timestamp = timestamp;
 	}
+
 }

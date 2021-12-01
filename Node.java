@@ -72,6 +72,10 @@ class Node implements Serializable {
 
 	}
 
+	public NodeID getNodeID() {
+		return identifier;
+	}
+
 	public void parse_config(String configFile) {
 		File file = new File(configFile);
 		BufferedReader reader = null;
@@ -222,7 +226,7 @@ class Node implements Serializable {
 
 		for (NodeID neighbor : neighborsArray.get(this.identifier)) {
 			try {
-				sendNodeMessage(new NodeMessage(0, new Message(this.identifier, null)),
+				sendNodeMessage(new NodeMessage(0, new Message(this.identifier, null, -1)),
 						sockets.get(neighbor).getOutputStream());
 			} catch (Exception ex) {
 				ex.printStackTrace();
