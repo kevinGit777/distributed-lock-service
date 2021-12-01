@@ -1,6 +1,6 @@
 import java.util.Deque;
 import java.util.concurrent.locks.Lock;
-
+public class Dlock {
     Node node;
     Deque<Message> queue;
     int current_request_timestamp;
@@ -40,6 +40,7 @@ import java.util.concurrent.locks.Lock;
             lock.lock();
             if(current_request_timestamp == -1 || message.timestamp < current_request_timestamp)
                 {
+			node.send(makeMessage("reply"), message.source);
             }else
             {
                queue.push(message); 
