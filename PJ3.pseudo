@@ -5,8 +5,9 @@ class DLock impelemnt {
     queuq;
     current_request_timestamp;
     lock;
+    Nodeid[] recieve_neighbor; 
     constructor( NodeID identifier, String configFileName) {
-        
+        recieve_neighbor = node.getNeighbors()
     }
 
     lock(time_stamp)
@@ -30,7 +31,7 @@ class DLock impelemnt {
     
     #########part 2 begin##############
 
-    sychronized recieve()
+    synchronized  recieve()
     {
         if (message.type == request){
             lock.lock()
@@ -49,7 +50,7 @@ class DLock impelemnt {
         }
     }
 
-    sychronized waitForAllNeighborReply()
+    synchronized  waitForAllNeighborReply()
     {
         foreach(recieve_neighbor)
         {   
@@ -83,7 +84,7 @@ class Application {
             execute_CS()
             Dlock.unlock()
         }
-        
+        lock.close();
     }
 
     execute_CS()
