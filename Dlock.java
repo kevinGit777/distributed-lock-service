@@ -1,3 +1,16 @@
+/*
+ * Written by:
+ * - Haifan Wu (hxw170013)
+ * - Li Feng (lxf200001)
+ * - Nicolas Amezquita (nxa200018)
+ * 
+ * For:
+ * CS6378 Advanced Operating Systems (Fall 2021)
+ * Professor Neeraj Mittal - UT Dallas
+ * 
+ * Monday, December 6th, 2021
+*/
+
 import java.util.Deque;
 import java.util.concurrent.locks.Lock;
 
