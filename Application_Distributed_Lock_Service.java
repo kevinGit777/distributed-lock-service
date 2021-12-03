@@ -43,7 +43,7 @@ public class Application_Distributed_Lock_Service{
 
 			try 
 			{
-				Thread.sleep(request_delay);
+				Thread.sleep(rand_exp_dist_prob_time(request_delay));
 			} 
 			catch(Exception exc)
 			{
@@ -54,12 +54,12 @@ public class Application_Distributed_Lock_Service{
         lock.close();
 	}
 
-    public void execute_cs()
+    private synchronized void execute_cs()
     {
 		try 
 			{
 				System.out.println("Node |" + myID + "| started excuting CS.");
-				Thread.sleep(execution_time);
+				Thread.sleep(rand_exp_dist_prob_time(execution_time));
 				System.out.println("Node |" + myID + "| finished excuting CS.");
 			} 
 			catch(Exception exc)
@@ -67,5 +67,11 @@ public class Application_Distributed_Lock_Service{
 				System.out.println("ERROR! Execution Time: " + exc);
 			}
     }
+
+	private long rand_exp_dist_prob_time(int mean){
+		Random rnd = new Random();
+		long time = (long)Math.floor(Math.log(1-rnd.nextDouble())/(-1.0/(double)mean));
+		return time;
+	}
 
 }
