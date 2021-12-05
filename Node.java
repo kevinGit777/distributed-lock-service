@@ -178,14 +178,16 @@ class Node implements Serializable {
 	}
 
 	public void send(Message message, NodeID destination) {
-		if (neighborsArray.get(identifier).contains(destination)) {
-			NodeMessage mes = new NodeMessage(1, message); // 1 is for "recieve"
-			try {
-				sendNodeMessage(mes, sockets.get(destination).getOutputStream());
-			} catch (IOException e) {
-				System.out.println(destination.getID() + "is broken.");
-				listen.broken(destination);
-				e.printStackTrace();
+		for (NodeID nodeID : neighborsArray.get(identifier)) {
+			if (nodeID.getID() == destination.getID()) {
+				NodeMessage mes = new NodeMessage(1, message); // 1 is for "recieve"
+				try {
+					sendNodeMessage(mes, sockets.get(nodeID).getOutputStream());
+				} catch (IOException e) {
+					System.out.println(destination.getID() + "is broken.");
+					listen.broken(destination);
+					e.printStackTrace();
+				}
 			}
 		}
 
