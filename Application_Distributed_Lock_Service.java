@@ -59,9 +59,9 @@ public class Application_Distributed_Lock_Service{
     {
 		try 
 			{
-				System.out.println("Node |" + myID + "| started excuting CS.");
+				System.out.println("Node |" + myID.getID() + "| started excuting CS.");
 				Thread.sleep(rand_exp_dist_prob_time(execution_time));
-				System.out.println("Node |" + myID + "| finished excuting CS.");
+				System.out.println("Node |" + myID.getID() + "| finished excuting CS.");
 			} 
 			catch(Exception exc)
 			{
