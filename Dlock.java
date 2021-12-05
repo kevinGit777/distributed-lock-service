@@ -9,110 +9,154 @@
  * Professor Neeraj Mittal - UT Dallas
  * 
  * Monday, December 6th, 2021
-*/
+ */
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Dlock implements Listener {
-    Node node;
-    Deque<Message> queue;
-    int current_request_timestamp;
-    Lock lock;
-    NodeID[] neighbors;
-    boolean[] recieve_neighbor;
-    boolean[] broken_neighbor;
+	Node node;
+	Deque<Message> queue;
+	int current_request_timestamp;
+	Lock lock;
+	NodeID[] neighbors;
+	boolean[] recieve_neighbor;
+	boolean[] broken_neighbor;
 
-    public Dlock(NodeID identifier, String configFileName) {
-        this.node = new Node(identifier, configFileName, this);
-        queue = new ArrayDeque<Message>();
-        this.current_request_timestamp = 0;
-        lock = new ReentrantLock();
-        this.neighbors = node.getNeighbors();
-        recieve_neighbor = new boolean[neighbors.length];
-        broken_neighbor = new boolean[neighbors.length];
-        for (int i = 0; i < neighbors.length; i++) {
-            recieve_neighbor[i] = false;
-            broken_neighbor[i] = false;
-        }
+	public Dlock(NodeID identifier, String configFileName) {
+		this.queue = new ArrayDeque<Message>();
+		this.current_request_timestamp = 0;
+		this.lock = new ReentrantLock();
+		int nei_num = getNeighborNum(configFileName); // assume complete graph
+		this.recieve_neighbor = new boolean[nei_num];
+		this.broken_neighbor = new boolean[nei_num];
+		for (int i = 0; i < nei_num; i++) {
+			recieve_neighbor[i] = false;
+			broken_neighbor[i] = false;
+		}
 
-        
-    }
+		this.node = new Node(identifier, configFileName, this);
+		this.neighbors = node.getNeighbors();
 
-    public void lock(int time_stamp) {
-        current_request_timestamp = time_stamp;
-        Message requestMessage = makeMessage("request");
-        node.sendToAll(requestMessage);
-        waitForAllNeighborReply();
-    }
+	}
 
-    public void unlock() {
-        lock.lock();
-        current_request_timestamp = -1;
-        for (Message message : queue) {
-            node.send(makeMessage("reply"), message.source);
-        }
-        lock.unlock();
-    }
+	private int getNeighborNum(String configFileName) {
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(configFileName));
+			String str = reader.readLine();
+			int num = 0;
+			while (str != null) {
+				if (Character.isDigit(str.charAt(0))) {
+					int i;
+					for (i = 1; i < str.length(); i++) {
+						if (!Character.isDigit(str.charAt(i))) {
+							break;
+						}
+					}
+					num = Integer.parseInt(str.substring(0, i));
+					break;
+				}
+				str = reader.readLine();
+			}
 
-    @Override
-    synchronized public void receive(Message message) {
-        String type = new String(message.data);
-        if (type == "request") {
-            lock.lock();
-            if (current_request_timestamp == -1 || message.timestamp < current_request_timestamp) {
-                node.send(makeMessage("reply"), message.source);
-            } else {
-                queue.push(message);
-            }
-            lock.unlock();
-        } else // type == reply
-        {
-            for (int i = 0; i < recieve_neighbor.length; i++) {
-                if (neighbors[i].getID() == message.source.getID()) {
-                    recieve_neighbor[i] = true;
-                }
+			reader.close();
+			return num - 1;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
 
-            }
-            notify();
-        }
-    }
+	public void lock(int time_stamp) {
+		System.out.println("Want to lock.");
+		current_request_timestamp = time_stamp;
+		Message requestMessage = makeMessage("request");
+		node.sendToAll(requestMessage);
+		waitForAllNeighborReply();
+	}
 
-    synchronized void waitForAllNeighborReply() {
-        for (int i = 0; i < recieve_neighbor.length; i++) {
-            recieve_neighbor[i] = false;
-        }
-        for (int i = 0; i < recieve_neighbor.length; i++) {
-            while (recieve_neighbor[i]) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
+	public void unlock() {
+		lock.lock();
+		current_request_timestamp = -1;
+		for (Message message : queue) {
+			System.out.println("Pop " + message.source.getID() + " from queue");
+			node.send(makeMessage("reply"), message.source);
+		}
+		queue.clear();
+		lock.unlock();
+	}
 
-    Message makeMessage(String msg) {
-        return new Message(node.getNodeID(), msg.getBytes(), this.current_request_timestamp);
-    }
+	@Override
+	synchronized public void receive(Message message) {
+		String type = new String(message.data);
+		if (type.compareTo("request") == 0) {
+			lock.lock();
+			if (current_request_timestamp == -1 || message.timestamp < current_request_timestamp
+					|| (message.timestamp == current_request_timestamp
+							&& message.source.getID() < this.node.getNodeID().getID())) {
+				System.out.println("Reply to "+ message.source.getID());
+				node.send(makeMessage("reply"), message.source);
+			} else {
+				System.out.println("Add " + message.source.getID() + " to queue");
+				queue.addLast(message);
+			}
+			lock.unlock();
+		} else // type == reply
+		{
+			System.out.println("Got respond from " + message.source.getID());
+			for (int i = 0; i < recieve_neighbor.length; i++) {
+				if (neighbors[i].getID() == message.source.getID()) {
+					recieve_neighbor[i] = true;
+				}
+			}
+			notify();
+		}
+	}
 
-    @Override
-    public void broken(NodeID neighbor) {
-        // not doing anything cuz
-        for (int i = 0; i < neighbors.length; i++) {
-            if (neighbor.getID() == neighbors[i].getID()) {
-                broken_neighbor[i] = true;
-            }
-        }
-        System.out.println("Site |" + neighbor.getID() + "| is now broken");
-    }
+	synchronized void waitForAllNeighborReply() {
+		for (int i = 0; i < recieve_neighbor.length; i++) {
+			recieve_neighbor[i] = broken_neighbor[i];
+		}
+		for (int i = 0; i < recieve_neighbor.length; i++) {
+			while (!recieve_neighbor[i]) {
+				try {
+					wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 
-    public void close() {
-        this.node.tearDown();
-        while (!allNeighborBroken()) {
+	Message makeMessage(String msg) {
+		return new Message(node.getNodeID(), msg.getBytes(), this.current_request_timestamp);
+	}
+
+	@Override
+	public synchronized void broken(NodeID neighbor) {
+		// not doing anything cuz
+		for (int i = 0; i < neighbors.length; i++) {
+			if (neighbor.getID() == neighbors[i].getID()) {
+				broken_neighbor[i] = true;
+			}
+		}
+		System.out.println("Site |" + neighbor.getID() + "| is now broken");
+		notify();
+	}
+
+	public synchronized void close() {
+		this.node.tearDown();
+		while (!allNeighborBroken()) {
 			try {
 				notify();
 				System.out.println("Wait for all neighbor broke.");
@@ -122,9 +166,9 @@ public class Dlock implements Listener {
 			}
 		}
 
-    }
+	}
 
-    boolean allNeighborBroken() {
+	boolean allNeighborBroken() {
 		for (boolean broken : broken_neighbor) {
 			if (!broken)
 				return false;

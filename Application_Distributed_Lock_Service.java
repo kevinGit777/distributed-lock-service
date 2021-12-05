@@ -25,7 +25,7 @@ public class Application_Distributed_Lock_Service{
 	int execution_time;
 	int num_requests;
 	Dlock lock;
-
+	Random rnd;
 	public Application_Distributed_Lock_Service(NodeID identifier, String configFile, int avg_inter_request_delay, int avg_cs_execution_time, int num_cs_requests) {
 		this.myID = identifier;
 		this.configFile = configFile;
@@ -33,10 +33,11 @@ public class Application_Distributed_Lock_Service{
 		this.execution_time = avg_cs_execution_time;
 		this.num_requests = num_cs_requests;
 		this.lock = new Dlock(this.myID, this.configFile);
+		this.rnd = new Random();
 	}
 
-	public synchronized void run() {
-		for (int i = 0; i < num_requests - 1; i++){
+	public void run() {
+		for (int i = 0; i < num_requests; i++){
 			lock.lock(i);
 			execute_cs();
 			lock.unlock();
@@ -54,7 +55,7 @@ public class Application_Distributed_Lock_Service{
         lock.close();
 	}
 
-    private synchronized void execute_cs()
+    private void execute_cs()
     {
 		try 
 			{
@@ -69,8 +70,7 @@ public class Application_Distributed_Lock_Service{
     }
 
 	private long rand_exp_dist_prob_time(int mean){
-		Random rnd = new Random();
-		long time = (long)Math.floor(Math.log(1-rnd.nextDouble())/(-1.0/(double)mean));
+		long time = (long)Math.floor(Math.log(1-rnd.nextDouble())/(-1.0/(double)(mean*1000)));
 		return time;
 	}
 
