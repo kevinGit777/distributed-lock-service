@@ -11,8 +11,10 @@
  * Monday, December 6th, 2021
 */
 
+import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Dlock implements Listener {
     Node node;
@@ -24,19 +26,23 @@ public class Dlock implements Listener {
     boolean[] broken_neighbor;
 
     public Dlock(NodeID identifier, String configFileName) {
-        this.node = new Node(identifier, configFileName, this);// Here is a error with the third parameter.
+        this.node = new Node(identifier, configFileName, this);
+        queue = new ArrayDeque<Message>();
         this.current_request_timestamp = 0;
-        int nodeNum = node.node_num;
+        lock = new ReentrantLock();
         this.neighbors = node.getNeighbors();
         recieve_neighbor = new boolean[neighbors.length];
         broken_neighbor = new boolean[neighbors.length];
-        for (int i = 0; i < nodeNum; i++) {
+        for (int i = 0; i < neighbors.length; i++) {
             recieve_neighbor[i] = false;
             broken_neighbor[i] = false;
         }
+
+        
     }
 
     public void lock(int time_stamp) {
+        current_request_timestamp = time_stamp;
         Message requestMessage = makeMessage("request");
         node.sendToAll(requestMessage);
         waitForAllNeighborReply();
