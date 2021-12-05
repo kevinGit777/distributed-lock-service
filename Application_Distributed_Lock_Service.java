@@ -17,6 +17,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ThreadLocalRandom;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 public class Application_Distributed_Lock_Service{
 
 	NodeID myID;
@@ -26,6 +31,8 @@ public class Application_Distributed_Lock_Service{
 	int num_requests;
 	Dlock lock;
 	Random rnd;
+	List<String> exec_times;
+
 	public Application_Distributed_Lock_Service(NodeID identifier, String configFile, int avg_inter_request_delay, int avg_cs_execution_time, int num_cs_requests) {
 		this.myID = identifier;
 		this.configFile = configFile;
@@ -34,6 +41,7 @@ public class Application_Distributed_Lock_Service{
 		this.num_requests = num_cs_requests;
 		this.lock = new Dlock(this.myID, this.configFile);
 		this.rnd = new Random();
+		this.exec_times = new ArrayList<String>();
 	}
 
 	public void run() {
@@ -53,15 +61,24 @@ public class Application_Distributed_Lock_Service{
 			
 		}
         lock.close();
+		output_cs_exec_time(myID.getID() + "-" + configFile);
 	}
 
     private void execute_cs()
     {
 		try 
 			{
-				System.out.println("Node |" + myID.getID() + "| started excuting CS.");
+				String current_time = get_GMT_timestamp();
+				String time_range = current_time + ",";
+				System.out.println("[" + current_time + "] Node |" + myID.getID() + "| started excuting CS.");
+
 				Thread.sleep(rand_exp_dist_prob_time(execution_time));
-				System.out.println("Node |" + myID.getID() + "| finished excuting CS.");
+				
+				current_time = get_GMT_timestamp();
+				time_range += current_time;
+				System.out.println("[" + current_time + "] Node |" + myID.getID() + "| finished excuting CS.");
+
+				exec_times.add(time_range);
 			} 
 			catch(Exception exc)
 			{
@@ -74,4 +91,33 @@ public class Application_Distributed_Lock_Service{
 		return time;
 	}
 
+	private String get_GMT_timestamp(){
+		Date timestamp = new Date();
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:SSSS");
+		formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+		return formatter.format(timestamp);
+	}
+
+	private void output_cs_exec_time(String file_name) {
+		try {
+			File output_file = new File(file_name);
+			if (output_file.createNewFile()) {
+				System.out.println("File <" + output_file.getName() + "> doesn't exist. Creating...");
+			} else {
+				System.out.println("File <" + output_file.getName() + "> already exists. Updating...");
+			}
+
+			BufferedWriter writer = new BufferedWriter(new FileWriter(output_file.getName()));
+			for (int i = 0; i < exec_times.size(); i++) {
+				String output_line = exec_times.get(i);
+				writer.write(output_line + "\n");
+				System.out.println(i+1 + ": " + output_line);
+			}
+			writer.close();
+			System.out.println("File <" + output_file.getName() + "> done!");
+		} catch (IOException ioe) {
+			System.out.println("ERROR occurred with the output file.");
+			ioe.printStackTrace();
+		}
+	}
 }
