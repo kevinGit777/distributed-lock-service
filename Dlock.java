@@ -101,8 +101,18 @@ public class Dlock implements Listener {
 		String type = new String(message.data);
 		if (type.compareTo("request") == 0) {
 			lock.lock();
-			if (current_request_timestamp == -1 || message.timestamp < current_request_timestamp
-					|| (message.timestamp == current_request_timestamp
+			
+			//check for message from broken neighbor 
+			/*
+			for (int i = 0; i < neighbors.length; i++) {
+				if (message.source.getID() == neighbors[i].getID() && broken_neighbor[i]) {
+					lock.unlock();
+					return;
+				}
+			}
+			*/
+			if (current_request_timestamp == -1 || message.timestamp < current_request_timestamp // no unfulfilled jobs or smaller timestamp
+ 					|| (message.timestamp == current_request_timestamp
 							&& message.source.getID() < this.node.getNodeID().getID())) {
 				System.out.println("Reply to "+ message.source.getID());
 				node.send(makeMessage("reply"), message.source);
@@ -110,6 +120,8 @@ public class Dlock implements Listener {
 				System.out.println("Add " + message.source.getID() + " to queue");
 				queue.addLast(message);
 			}
+			
+			
 			lock.unlock();
 		} else // type == reply
 		{
