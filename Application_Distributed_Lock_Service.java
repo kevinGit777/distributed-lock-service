@@ -16,11 +16,7 @@ import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ThreadLocalRandom;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
+import java.sql.Timestamp;
 
 public class Application_Distributed_Lock_Service{
 
@@ -68,7 +64,7 @@ public class Application_Distributed_Lock_Service{
     {
 		try 
 			{
-				String current_time = get_GMT_timestamp();
+				long current_time = get_GMT_timestamp();
 				String time_range = current_time + ",";
 				System.out.println("[" + current_time + "] Node |" + myID.getID() + "| started excuting CS.");
 
@@ -91,11 +87,9 @@ public class Application_Distributed_Lock_Service{
 		return time;
 	}
 
-	private String get_GMT_timestamp(){
-		Date timestamp = new Date();
-        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:SSSS");
-		formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-		return formatter.format(timestamp);
+	private long get_GMT_timestamp(){
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		return timestamp.getTime();
 	}
 
 	private void output_cs_exec_time(String file_name) {
