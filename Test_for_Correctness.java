@@ -30,7 +30,7 @@ public class Test_for_Correctness
 
 		for (String file_name : current_dir.list()) 
 		{
-			if (file_name.endsWith(args[0]))
+			if (file_name.endsWith(args[0]) && !file_name.equals(args[0]))
 			{
 				files.add(file_name);
 			}
