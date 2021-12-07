@@ -103,9 +103,10 @@ class NodeServerThread implements Runnable {
 				if (msg_received.type == 0) { // broken
 					terminate();
 					this.listener.broken(msg_received.message.source);
-					break; // it ends here because 
+					break; 
 				} else if (msg_received.type == 1) {
 					this.listener.receive(msg_received.message);
+					//input.close();
 				} else {
 					System.out.println("Error-Message");
 					break;

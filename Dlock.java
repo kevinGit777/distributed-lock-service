@@ -40,10 +40,10 @@ public class Dlock implements Listener {
 			recieve_neighbor[i] = false;
 			broken_neighbor[i] = false;
 		}
-
+		lock.lock(); // To prevent case 
 		this.node = new Node(identifier, configFileName, this);
 		this.neighbors = node.getNeighbors();
-
+		lock.unlock();
 	}
 
 	private int getNeighborNum(String configFileName) {
@@ -78,7 +78,7 @@ public class Dlock implements Listener {
 	}
 
 	public void lock(int time_stamp) {
-		System.out.println("Want to lock.");
+		// System.out.println("Want to lock.");
 		current_request_timestamp = time_stamp;
 		Message requestMessage = makeMessage("request");
 		node.sendToAll(requestMessage);
@@ -103,14 +103,13 @@ public class Dlock implements Listener {
 			lock.lock();
 			
 			//check for message from broken neighbor 
-			/*
 			for (int i = 0; i < neighbors.length; i++) {
 				if (message.source.getID() == neighbors[i].getID() && broken_neighbor[i]) {
 					lock.unlock();
 					return;
 				}
 			}
-			*/
+			
 			if (current_request_timestamp == -1 || message.timestamp < current_request_timestamp // no unfulfilled jobs or smaller timestamp
  					|| (message.timestamp == current_request_timestamp
 							&& message.source.getID() < this.node.getNodeID().getID())) {
@@ -150,7 +149,7 @@ public class Dlock implements Listener {
 		}
 	}
 
-	Message makeMessage(String msg) {
+	private Message makeMessage(String msg) {
 		return new Message(node.getNodeID(), msg.getBytes(), this.current_request_timestamp);
 	}
 

@@ -54,7 +54,9 @@ class Node implements Serializable {
 
 		// 4) Start CLIENT socket for each neighbor
 		for (NodeID neighbor : neighborsArray.get(this.identifier)) {
-			NodeClient nc = new NodeClient(this.identifier, neighbor, hosts.get(neighbor), ports.get(neighbor),
+			NodeClient nc = new NodeClient(this.identifier, neighbor, 
+					hosts.get(neighbor),
+					ports.get(neighbor),
 					sockets);
 			clients.add(nc);
 			nc.start();
