@@ -23,7 +23,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Dlock implements Listener {
 	Node node;
 	Deque<Message> queue;
-	int current_request_timestamp;
+	long current_request_timestamp;
 	Lock queue_lock;
 	Lock CSLock;
 	NodeID[] neighbors;
@@ -82,7 +82,7 @@ public class Dlock implements Listener {
 		return -1;
 	}
 
-	public void lock(int time_stamp) {
+	public synchronized void lock(long time_stamp) {
 		// System.out.println("Want to lock.");
 		current_request_timestamp = time_stamp;
 		Message requestMessage = makeMessage("request");
@@ -125,7 +125,15 @@ public class Dlock implements Listener {
 			if (current_request_timestamp == -1 || message.timestamp < current_request_timestamp // no unfulfilled jobs or smaller timestamp
  					|| (message.timestamp == current_request_timestamp
 							&& message.source.getID() < this.node.getNodeID().getID())) {
-				System.out.println("Reply to "+ message.source.getID());
+				int flag =0;
+				if(current_request_timestamp == -1)
+					flag =1;
+				else if(message.timestamp < current_request_timestamp)
+					flag = 2;
+				else
+					flag =3;
+				
+				System.out.println("Reply to "+ message.source.getID() + "with "+flag);
 				node.send(makeMessage("reply"), message.source);
 			} else {
 				System.out.println("Add " + message.source.getID() + " to queue");

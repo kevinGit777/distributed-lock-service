@@ -7,10 +7,10 @@ public class Message implements java.io.Serializable
 	//Payload of the message
 	byte[] data;
 
-	int timestamp;
+	long timestamp;
 	
 	//Constructor
-	public Message(NodeID source, byte[] data, int timestamp)
+	public Message(NodeID source, byte[] data, long timestamp)
 	{
 		this.source = source;
 		this.data = data;
