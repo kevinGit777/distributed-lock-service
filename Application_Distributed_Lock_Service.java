@@ -43,7 +43,9 @@ public class Application_Distributed_Lock_Service{
 	public void run() {
 		for (int i = 0; i < num_requests; i++){
 			lock.lock(i);
+			System.out.println("in cs");
 			execute_cs();
+			System.out.println("out cs");
 			lock.unlock();
 
 			try 
@@ -62,10 +64,11 @@ public class Application_Distributed_Lock_Service{
 
     private void execute_cs()
     {
+    	
 		try 
 			{
 				long current_time = get_GMT_timestamp();
-				String time_range = current_time + ",";
+				String time_range = myID.getID()+" "+ current_time + ",";
 				
 				Thread.sleep(rand_exp_dist_prob_time(execution_time));
 				

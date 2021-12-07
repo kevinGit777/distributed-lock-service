@@ -24,7 +24,8 @@ public class Dlock implements Listener {
 	Node node;
 	Deque<Message> queue;
 	int current_request_timestamp;
-	Lock lock;
+	Lock queue_lock;
+	Lock CSLock;
 	NodeID[] neighbors;
 	boolean[] recieve_neighbor;
 	boolean[] broken_neighbor;
@@ -33,7 +34,8 @@ public class Dlock implements Listener {
 	public Dlock(NodeID identifier, String configFileName) {
 		this.queue = new ArrayDeque<Message>();
 		this.current_request_timestamp = 0;
-		this.lock = new ReentrantLock();
+		this.queue_lock = new ReentrantLock();
+		this.CSLock = new ReentrantLock();
 		int nei_num = getNeighborNum(configFileName); // assume complete graph
 		this.recieve_neighbor = new boolean[nei_num];
 		this.broken_neighbor = new boolean[nei_num];
@@ -42,10 +44,10 @@ public class Dlock implements Listener {
 			broken_neighbor[i] = false;
 		}
 		terminating = false;
-		lock.lock(); // To prevent case, this node want to reply message but it is not finished setup
+		queue_lock.lock(); // To prevent case, this node want to reply message but it is not finished setup
 		this.node = new Node(identifier, configFileName, this);
 		this.neighbors = node.getNeighbors();
-		lock.unlock();
+		queue_lock.unlock();
 		
 	}
 
@@ -86,17 +88,19 @@ public class Dlock implements Listener {
 		Message requestMessage = makeMessage("request");
 		node.sendToAll(requestMessage);
 		waitForAllNeighborReply();
+		CSLock.lock();
 	}
 
 	public void unlock() {
-		lock.lock();
+		CSLock.unlock();
+		queue_lock.lock();
 		current_request_timestamp = -1;
 		for (Message message : queue) {
 			System.out.println("Pop " + message.source.getID() + " from queue");
 			node.send(makeMessage("reply"), message.source);
 		}
 		queue.clear();
-		lock.unlock();
+		queue_lock.unlock();
 	}
 
 	@Override
@@ -104,13 +108,16 @@ public class Dlock implements Listener {
 		if (terminating)
 			return;
 		String type = new String(message.data);
+		CSLock.lock();
+		CSLock.unlock();
+		
 		if (type.compareTo("request") == 0) {
-			lock.lock();
+			queue_lock.lock();
 			
 			//check for message from broken neighbor 
 			for (int i = 0; i < neighbors.length; i++) {
 				if (message.source.getID() == neighbors[i].getID() && broken_neighbor[i]) {
-					lock.unlock();
+					queue_lock.unlock();
 					return;
 				}
 			}
@@ -126,10 +133,10 @@ public class Dlock implements Listener {
 			}
 			
 			
-			lock.unlock();
+			queue_lock.unlock();
 		} else // type == reply
 		{
-			System.out.println("Got respond from " + message.source.getID());
+			//System.out.println("Got respond from " + message.source.getID());
 			for (int i = 0; i < recieve_neighbor.length; i++) {
 				if (neighbors[i].getID() == message.source.getID()) {
 					recieve_neighbor[i] = true;

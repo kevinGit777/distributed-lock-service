@@ -16,7 +16,8 @@ import java.util.*;
 import java.sql.Time;
 
 public class Test_for_Correctness
-{
+{	
+	
 	public static void main(String[] args)
 	{
 		if (args.length != 1)
@@ -57,16 +58,17 @@ public class Test_for_Correctness
 		//Compare all intevals
 		boolean overlap = false;
 		int overlap_count = 0;
-		Collections.sort(critical_sections);
+		Collections.sort(critical_sections, new Sortbyroll());
 
 		for (String str : critical_sections) 
 		{
 			System.out.println(str);
         }
-
+		
 		for (int i = 1; i < critical_sections.size(); i++) {
-			String ti1 = critical_sections.get(i-1);
-			String ti2 = critical_sections.get(i);
+			overlap = false;
+			String ti1 = critical_sections.get(i-1).substring(2);
+			String ti2 = critical_sections.get(i).substring(2);
 			long start_time = Long.parseLong(ti2.split(",")[0]);
 			long end_time = Long.parseLong(ti1.split(",")[1]);
 			if (start_time < end_time)
@@ -78,7 +80,7 @@ public class Test_for_Correctness
 		}
 
 		//Determine correctness
-		if (!overlap)
+		if (overlap_count == 0)
 		{
 			System.out.println("SUCCESS! No Critical Sections overlapped in their execution.");
 		}
@@ -88,4 +90,15 @@ public class Test_for_Correctness
 		}
 	}
 
+}
+
+class Sortbyroll implements Comparator<String>
+{
+    // Used for sorting in ascending order of
+    // roll number
+	@Override
+	public int compare(String o1, String o2) {
+		// TODO Auto-generated method stub
+		return o1.substring(2).compareTo(o2.substring(2));
+	}
 }
