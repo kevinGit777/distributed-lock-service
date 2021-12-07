@@ -28,6 +28,7 @@ public class Dlock implements Listener {
 	NodeID[] neighbors;
 	boolean[] recieve_neighbor;
 	boolean[] broken_neighbor;
+	boolean terminating;
 
 	public Dlock(NodeID identifier, String configFileName) {
 		this.queue = new ArrayDeque<Message>();
@@ -40,10 +41,12 @@ public class Dlock implements Listener {
 			recieve_neighbor[i] = false;
 			broken_neighbor[i] = false;
 		}
-		lock.lock(); // To prevent case 
+		terminating = false;
+		lock.lock(); // To prevent case, this node want to reply message but it is not finished setup
 		this.node = new Node(identifier, configFileName, this);
 		this.neighbors = node.getNeighbors();
 		lock.unlock();
+		
 	}
 
 	private int getNeighborNum(String configFileName) {
@@ -98,6 +101,8 @@ public class Dlock implements Listener {
 
 	@Override
 	synchronized public void receive(Message message) {
+		if (terminating)
+			return;
 		String type = new String(message.data);
 		if (type.compareTo("request") == 0) {
 			lock.lock();
@@ -159,6 +164,7 @@ public class Dlock implements Listener {
 		for (int i = 0; i < neighbors.length; i++) {
 			if (neighbor.getID() == neighbors[i].getID()) {
 				broken_neighbor[i] = true;
+				//System.out.println("Neighbor "+i+" is broken.");
 			}
 		}
 		System.out.println("Site |" + neighbor.getID() + "| is now broken");
@@ -166,6 +172,7 @@ public class Dlock implements Listener {
 	}
 
 	public synchronized void close() {
+		terminating = true;
 		this.node.tearDown();
 		while (!allNeighborBroken()) {
 			try {
