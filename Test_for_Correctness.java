@@ -59,6 +59,11 @@ public class Test_for_Correctness
 		int overlap_count = 0;
 		Collections.sort(critical_sections);
 
+		for (String str : critical_sections) 
+		{
+			System.out.println(str);
+        }
+
 		for (int i = 1; i < critical_sections.size(); i++) {
 			String ti1 = critical_sections.get(i-1);
 			String ti2 = critical_sections.get(i);
@@ -69,6 +74,7 @@ public class Test_for_Correctness
 				overlap = true;
 				overlap_count++;
 			}
+			System.out.println("Comparing " + (i-1) + " with " + i + " = " + overlap + "(count = " + overlap_count + ")");
 		}
 
 		//Determine correctness
@@ -78,7 +84,7 @@ public class Test_for_Correctness
 		}
 		else
 		{
-			System.out.println("FAILURE! " + overlap_count + "Critical Sections overlapped in their execution.");
+			System.out.println("FAILURE! " + overlap_count + " Critical Sections overlapped in their execution.");
 		}
 	}
 

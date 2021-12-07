@@ -66,13 +66,11 @@ public class Application_Distributed_Lock_Service{
 			{
 				long current_time = get_GMT_timestamp();
 				String time_range = current_time + ",";
-				System.out.println("[" + current_time + "] Node |" + myID.getID() + "| started excuting CS.");
-
+				
 				Thread.sleep(rand_exp_dist_prob_time(execution_time));
 				
 				current_time = get_GMT_timestamp();
 				time_range += current_time;
-				System.out.println("[" + current_time + "] Node |" + myID.getID() + "| finished excuting CS.");
 
 				exec_times.add(time_range);
 			} 
@@ -96,19 +94,18 @@ public class Application_Distributed_Lock_Service{
 		try {
 			File output_file = new File(file_name);
 			if (output_file.createNewFile()) {
-				System.out.println("File <" + output_file.getName() + "> doesn't exist. Creating...");
+				System.out.println("Log file <" + output_file.getName() + "> doesn't exist. Creating...");
 			} else {
-				System.out.println("File <" + output_file.getName() + "> already exists. Updating...");
+				System.out.println("Log file <" + output_file.getName() + "> already exists. Updating...");
 			}
 
 			BufferedWriter writer = new BufferedWriter(new FileWriter(output_file.getName()));
 			for (int i = 0; i < exec_times.size(); i++) {
 				String output_line = exec_times.get(i);
 				writer.write(output_line + "\n");
-				System.out.println(i+1 + ": " + output_line);
 			}
 			writer.close();
-			System.out.println("File <" + output_file.getName() + "> done!");
+			System.out.println("Log file <" + output_file.getName() + "> done!");
 		} catch (IOException ioe) {
 			System.out.println("ERROR occurred with the output file.");
 			ioe.printStackTrace();
