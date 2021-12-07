@@ -96,7 +96,6 @@ public class Dlock implements Listener {
 		queue_lock.lock();
 		current_request_timestamp = -1;
 		for (Message message : queue) {
-			System.out.println("Pop " + message.source.getID() + " from queue");
 			node.send(makeMessage("reply"), message.source);
 		}
 		queue.clear();
@@ -125,18 +124,8 @@ public class Dlock implements Listener {
 			if (current_request_timestamp == -1 || message.timestamp < current_request_timestamp // no unfulfilled jobs or smaller timestamp
  					|| (message.timestamp == current_request_timestamp
 							&& message.source.getID() < this.node.getNodeID().getID())) {
-				int flag =0;
-				if(current_request_timestamp == -1)
-					flag =1;
-				else if(message.timestamp < current_request_timestamp)
-					flag = 2;
-				else
-					flag =3;
-				
-				System.out.println("Reply to "+ message.source.getID() + "with "+flag);
 				node.send(makeMessage("reply"), message.source);
 			} else {
-				System.out.println("Add " + message.source.getID() + " to queue");
 				queue.addLast(message);
 			}
 			
@@ -144,7 +133,6 @@ public class Dlock implements Listener {
 			queue_lock.unlock();
 		} else // type == reply
 		{
-			//System.out.println("Got respond from " + message.source.getID());
 			for (int i = 0; i < recieve_neighbor.length; i++) {
 				if (neighbors[i].getID() == message.source.getID()) {
 					recieve_neighbor[i] = true;
@@ -179,10 +167,8 @@ public class Dlock implements Listener {
 		for (int i = 0; i < neighbors.length; i++) {
 			if (neighbor.getID() == neighbors[i].getID()) {
 				broken_neighbor[i] = true;
-				//System.out.println("Neighbor "+i+" is broken.");
 			}
 		}
-		System.out.println("Site |" + neighbor.getID() + "| is now broken");
 		notify();
 	}
 
@@ -192,7 +178,6 @@ public class Dlock implements Listener {
 		while (!allNeighborBroken()) {
 			try {
 				notify();
-				System.out.println("Wait for all neighbor broke.");
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();

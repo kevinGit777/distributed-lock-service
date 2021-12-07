@@ -45,9 +45,7 @@ public class Application_Distributed_Lock_Service{
 			lock.lock(System.currentTimeMillis());
 			System.out.println("in cs");
 			execute_cs();
-			System.out.println("out cs");
 			lock.unlock();
-
 			try 
 			{
 				Thread.sleep(rand_exp_dist_prob_time(request_delay));
