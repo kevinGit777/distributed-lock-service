@@ -16,7 +16,7 @@ public class Main
 	public static void main(String[] args)
 	{
 		if (args.length != 5){
-			System.out.println("ERROR! Argument missing. Arguments passed: " + args.length + "/5");
+			System.out.println("ERROR! Argument missing. Usage: <java Main 'NodeID' 'config file' 'avg request delay (secs)' 'avg execution time (secs)' 'num of critical sections'>");
 			System.exit(0);
 		}
 
