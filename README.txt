@@ -23,4 +23,4 @@ Written by:
 ---How to test the correctness of the program---
 1. Run the program following the instructions above
 2. Run Test_for_Correctness using the command <java Test_for_Correctness 'config file'>
-	a) 'config file' = the name of the same configuration file used above
+	a) 'config file' = the name of the same configuration file used in run Main
