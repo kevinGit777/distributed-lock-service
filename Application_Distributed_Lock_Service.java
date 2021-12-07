@@ -43,9 +43,7 @@ public class Application_Distributed_Lock_Service{
 	public void run() {
 		for (int i = 0; i < num_requests; i++){
 			lock.lock(i);
-			System.out.println("in cs");
 			execute_cs();
-			System.out.println("out cs");
 			lock.unlock();
 
 			try 
